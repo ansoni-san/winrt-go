@@ -60,16 +60,16 @@ func winrt_AsyncOperationCompletedHandler_Invoke(instancePtr unsafe.Pointer, asy
 }
 
 //export winrt_AsyncOperationCompletedHandler_AddRef
-func winrt_AsyncOperationCompletedHandler_AddRef(instancePtr unsafe.Pointer) uint64 {
+func winrt_AsyncOperationCompletedHandler_AddRef(instancePtr unsafe.Pointer) int64 {
 	instance := (*AsyncOperationCompletedHandler)(instancePtr)
 	return instance.addRef()
 }
 
 //export winrt_AsyncOperationCompletedHandler_Release
-func winrt_AsyncOperationCompletedHandler_Release(instancePtr unsafe.Pointer) uint64 {
+func winrt_AsyncOperationCompletedHandler_Release(instancePtr unsafe.Pointer) int64 {
 	instance := (*AsyncOperationCompletedHandler)(instancePtr)
 	rem := instance.removeRef()
-	if rem == 0 {
+	if rem <= 0 {
 		// We're done.
 		delete(callbacksAsyncOperationCompletedHandler, instancePtr)
 		C.free(instancePtr)

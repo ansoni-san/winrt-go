@@ -38,7 +38,7 @@ const Signature{{.Name}} string = "{{.Signature}}"
 type {{.Name}} struct {
 	ole.IUnknown
 	sync.Mutex
-	refs uint64
+	refs int64
 	IID  ole.GUID
 }
 
@@ -60,21 +60,13 @@ func New{{.Name}}(iid *ole.GUID, callback {{.Name}}Callback) *{{.Name}} {
 }
 
 // addRef increments the reference counter by one
-func (r *{{.Name}}) addRef() uint64 {
-	r.Lock()
-	defer r.Unlock()
-	r.refs++
-	return r.refs
+func (r *{{.Name}}) addRef() int64 {
+	
+	return atomic.AddInt64(&(r.refs), 1)
 }
 
-// removeRef decrements the reference counter by one. If it was already zero, it will just return zero.
-func (r *{{.Name}}) removeRef() uint64 {
-	r.Lock()
-	defer r.Unlock()
-
-	if r.refs > 0 {
-		r.refs--
-	}
-
-	return r.refs
+// removeRef decrements the reference counter by one
+func (r *{{.Name}}) removeRef() int64 {
+	
+	return atomic.AddInt64(&(r.refs), -1)
 }

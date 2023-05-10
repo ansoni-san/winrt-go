@@ -7,6 +7,7 @@ package foundation
 
 import (
 	"sync"
+	"sync/atomic"
 	"unsafe"
 
 	"github.com/go-ole/go-ole"
@@ -52,7 +53,7 @@ const SignatureTypedEventHandler string = "delegate({9de1c534-6ae1-11e0-84e1-18a
 type TypedEventHandler struct {
 	ole.IUnknown
 	sync.Mutex
-	refs uint64
+	refs int64
 	IID  ole.GUID
 }
 
@@ -72,21 +73,13 @@ func NewTypedEventHandler(iid *ole.GUID, callback TypedEventHandlerCallback) *Ty
 }
 
 // addRef increments the reference counter by one
-func (r *TypedEventHandler) addRef() uint64 {
-	r.Lock()
-	defer r.Unlock()
-	r.refs++
-	return r.refs
+func (r *TypedEventHandler) addRef() int64 {
+
+	return atomic.AddInt64(&(r.refs), 1)
 }
 
 // removeRef decrements the reference counter by one. If it was already zero, it will just return zero.
-func (r *TypedEventHandler) removeRef() uint64 {
-	r.Lock()
-	defer r.Unlock()
+func (r *TypedEventHandler) removeRef() int64 {
 
-	if r.refs > 0 {
-		r.refs--
-	}
-
-	return r.refs
+	return atomic.AddInt64(&(r.refs), -1)
 }

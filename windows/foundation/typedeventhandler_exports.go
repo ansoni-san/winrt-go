@@ -60,16 +60,16 @@ func winrt_TypedEventHandler_Invoke(instancePtr unsafe.Pointer, senderPtr unsafe
 }
 
 //export winrt_TypedEventHandler_AddRef
-func winrt_TypedEventHandler_AddRef(instancePtr unsafe.Pointer) uint64 {
+func winrt_TypedEventHandler_AddRef(instancePtr unsafe.Pointer) int64 {
 	instance := (*TypedEventHandler)(instancePtr)
 	return instance.addRef()
 }
 
 //export winrt_TypedEventHandler_Release
-func winrt_TypedEventHandler_Release(instancePtr unsafe.Pointer) uint64 {
+func winrt_TypedEventHandler_Release(instancePtr unsafe.Pointer) int64 {
 	instance := (*TypedEventHandler)(instancePtr)
 	rem := instance.removeRef()
-	if rem == 0 {
+	if rem <= 0 {
 		// We're done.
 		delete(callbacksTypedEventHandler, instancePtr)
 		C.free(instancePtr)

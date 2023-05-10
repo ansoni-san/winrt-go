@@ -60,16 +60,16 @@ func winrt_{{.Name}}_Invoke(instancePtr unsafe.Pointer {{range .InParams -}}
 }
 
 //export winrt_{{.Name}}_AddRef
-func winrt_{{.Name}}_AddRef(instancePtr unsafe.Pointer) uint64 {
+func winrt_{{.Name}}_AddRef(instancePtr unsafe.Pointer) int64 {
 	instance := (*{{.Name}})(instancePtr)
 	return instance.addRef()
 }
 
 //export winrt_{{.Name}}_Release
-func winrt_{{.Name}}_Release(instancePtr unsafe.Pointer) uint64 {
+func winrt_{{.Name}}_Release(instancePtr unsafe.Pointer) int64 {
 	instance := (*{{.Name}})(instancePtr)
 	rem := instance.removeRef()
-	if rem == 0 {
+	if rem <= 0 {
 		// We're done.
 		delete(callbacks{{.Name}}, instancePtr)
 		C.free(instancePtr)
