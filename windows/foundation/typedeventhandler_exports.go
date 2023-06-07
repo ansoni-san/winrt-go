@@ -71,7 +71,9 @@ func winrt_TypedEventHandler_Release(instancePtr unsafe.Pointer) int64 {
 	rem := instance.removeRef()
 	if rem <= 0 {
 		// We're done.
+		callbacksTypedEventHandlerLock.Lock()
 		delete(callbacksTypedEventHandler, instancePtr)
+		callbacksTypedEventHandlerLock.Unlock()
 		C.free(instancePtr)
 	}
 	return rem

@@ -60,13 +60,16 @@ type TypedEventHandler struct {
 type TypedEventHandlerCallback func(instance *TypedEventHandler, sender unsafe.Pointer, args unsafe.Pointer)
 
 var callbacksTypedEventHandler map[unsafe.Pointer]TypedEventHandlerCallback = make(map[unsafe.Pointer]TypedEventHandlerCallback)
+var callbacksTypedEventHandlerLock sync.Mutex
 
 func NewTypedEventHandler(iid *ole.GUID, callback TypedEventHandlerCallback) *TypedEventHandler {
 	inst := (*TypedEventHandler)(C.malloc(C.size_t(unsafe.Sizeof(TypedEventHandler{}))))
 	inst.RawVTable = (*interface{})((unsafe.Pointer)(C.winrt_getTypedEventHandlerVtbl()))
 	inst.IID = *iid // copy contents
 
+	callbacksTypedEventHandlerLock.Lock()
 	callbacksTypedEventHandler[unsafe.Pointer(inst)] = callback
+	callbacksTypedEventHandlerLock.Unlock()
 
 	inst.addRef()
 	return inst
@@ -78,7 +81,7 @@ func (r *TypedEventHandler) addRef() int64 {
 	return atomic.AddInt64(&(r.refs), 1)
 }
 
-// removeRef decrements the reference counter by one. If it was already zero, it will just return zero.
+// removeRef decrements the reference counter by one
 func (r *TypedEventHandler) removeRef() int64 {
 
 	return atomic.AddInt64(&(r.refs), -1)

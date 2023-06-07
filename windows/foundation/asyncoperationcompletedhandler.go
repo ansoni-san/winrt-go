@@ -60,13 +60,16 @@ type AsyncOperationCompletedHandler struct {
 type AsyncOperationCompletedHandlerCallback func(instance *AsyncOperationCompletedHandler, asyncInfo *IAsyncOperation, asyncStatus AsyncStatus)
 
 var callbacksAsyncOperationCompletedHandler map[unsafe.Pointer]AsyncOperationCompletedHandlerCallback = make(map[unsafe.Pointer]AsyncOperationCompletedHandlerCallback)
+var callbacksAsyncOperationCompletedHandlerLock sync.Mutex
 
 func NewAsyncOperationCompletedHandler(iid *ole.GUID, callback AsyncOperationCompletedHandlerCallback) *AsyncOperationCompletedHandler {
 	inst := (*AsyncOperationCompletedHandler)(C.malloc(C.size_t(unsafe.Sizeof(AsyncOperationCompletedHandler{}))))
 	inst.RawVTable = (*interface{})((unsafe.Pointer)(C.winrt_getAsyncOperationCompletedHandlerVtbl()))
 	inst.IID = *iid // copy contents
 
+	callbacksAsyncOperationCompletedHandlerLock.Lock()
 	callbacksAsyncOperationCompletedHandler[unsafe.Pointer(inst)] = callback
+	callbacksAsyncOperationCompletedHandlerLock.Unlock()
 
 	inst.addRef()
 	return inst
@@ -78,7 +81,7 @@ func (r *AsyncOperationCompletedHandler) addRef() int64 {
 	return atomic.AddInt64(&(r.refs), 1)
 }
 
-// removeRef decrements the reference counter by one. If it was already zero, it will just return zero.
+// removeRef decrements the reference counter by one
 func (r *AsyncOperationCompletedHandler) removeRef() int64 {
 
 	return atomic.AddInt64(&(r.refs), -1)

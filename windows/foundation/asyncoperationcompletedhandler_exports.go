@@ -71,7 +71,9 @@ func winrt_AsyncOperationCompletedHandler_Release(instancePtr unsafe.Pointer) in
 	rem := instance.removeRef()
 	if rem <= 0 {
 		// We're done.
+		callbacksAsyncOperationCompletedHandlerLock.Lock()
 		delete(callbacksAsyncOperationCompletedHandler, instancePtr)
+		callbacksAsyncOperationCompletedHandlerLock.Unlock()
 		C.free(instancePtr)
 	}
 	return rem

@@ -71,7 +71,9 @@ func winrt_{{.Name}}_Release(instancePtr unsafe.Pointer) int64 {
 	rem := instance.removeRef()
 	if rem <= 0 {
 		// We're done.
+		callbacks{{.Name}}Lock.Lock()
 		delete(callbacks{{.Name}}, instancePtr)
+		callbacks{{.Name}}Lock.Unlock()
 		C.free(instancePtr)
 	}
 	return rem
