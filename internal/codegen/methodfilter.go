@@ -12,7 +12,7 @@ func NewMethodFilter(filters []string) *MethodFilter {
 
 // Filter returns true if the method matches one of the filters.
 // In case no filter matches the method, the method is allowed.
-func (md *MethodFilter) Filter(method string) bool {
+func (md *MethodFilter) Filter(method string, directMatch bool) bool {
 	for _, filter := range md.filters {
 		result := true
 		if filter[0] == '!' {
@@ -20,7 +20,7 @@ func (md *MethodFilter) Filter(method string) bool {
 			result = false
 		}
 
-		if filter == "*" || filter == method {
+		if (!directMatch && filter == "*") || filter == method {
 			return result
 		}
 	}

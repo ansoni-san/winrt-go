@@ -597,13 +597,14 @@ func (g *generator) getGenFuncs(typeDef *winmd.TypeDef, requiresActivation bool)
 func (g *generator) genFuncFromMethod(typeDef *winmd.TypeDef, methodDef *types.MethodDef, exclusiveTo string, requiresActivation bool) (*genFunc, error) {
 	// add the type imports to the top of the file
 	// only if the method is going to be implemented
-	implement := g.shouldImplementMethod(methodDef)
+	overloadName := winmd.GetMethodOverloadName(typeDef.Ctx(), methodDef)
+	implement := g.shouldImplementMethod(methodDef, overloadName)
 
 	if !implement {
 		// if we don't implement the method, we don't need to gather
 		// all the information, just the name of it is enough
 		return &genFunc{
-			Name:               winmd.GetMethodOverloadName(typeDef.Ctx(), methodDef),
+			Name:               overloadName,
 			RequiresImports:    nil,
 			Implement:          implement,
 			InParams:           nil,
@@ -642,7 +643,7 @@ func (g *generator) genFuncFromMethod(typeDef *winmd.TypeDef, methodDef *types.M
 	}
 
 	return &genFunc{
-		Name:               winmd.GetMethodOverloadName(typeDef.Ctx(), methodDef),
+		Name:               overloadName,
 		RequiresImports:    requiredImports,
 		Implement:          implement,
 		InParams:           params,
@@ -653,8 +654,8 @@ func (g *generator) genFuncFromMethod(typeDef *winmd.TypeDef, methodDef *types.M
 	}, nil
 }
 
-func (g *generator) shouldImplementMethod(methodDef *types.MethodDef) bool {
-	return g.methodFilter.Filter(methodDef.Name)
+func (g *generator) shouldImplementMethod(methodDef *types.MethodDef, overloadName string) bool {
+	return g.methodFilter.Filter(methodDef.Name, false) && g.methodFilter.Filter(overloadName, true)
 }
 
 func (g *generator) getInParameters(curPackage string, typeDef *winmd.TypeDef, methodDef *types.MethodDef) ([]*genParam, error) {
